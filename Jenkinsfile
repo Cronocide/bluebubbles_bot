@@ -16,7 +16,7 @@ pipeline {
 	}
 	environment {
 		WORKSPACE_PATH = "/opt/nomad/alloc/${NOMAD_ALLOC_ID}/${NOMAD_TASK_NAME}${WORKSPACE}"
-		DESCRIPTION = "Another amazing piece of software written by Cronocide."
+		DESCRIPTION = "A chatbot for a local BlueBlubbles server."
 	}
 	stages {
 		stage('Prepare') {

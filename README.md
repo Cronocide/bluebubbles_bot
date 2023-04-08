@@ -1,12 +1,23 @@
-# python-template
+# bluebubbles_bot
+## A chatbot for a local BlueBlubbles server.
 
-Template repository for Docker image creation and deployment.
+## Usage
 
+```
 
-# Deployment Checklist
+```
 
-* Add Jenkins user to project as a Developer in Git
-* Write the description in the Jenkinsfile env variable
-* Add a private Github push mirror
-* Rename the project in the README
-* Delete this checklist from the README
+## Installation
+
+1. 
+2. 
+3. 
+
+## Configuration
+
+```
+
+```
+
+## Justification
+
