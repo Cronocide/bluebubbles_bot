@@ -53,10 +53,9 @@ setup(name='bluebubbles_bot',
 	author_email='github@cronocide.com',
 	description='A chatbot for a local BlueBlubbles server.',
 	packages=find_packages(exclude=['tests']),
-	package_data={"": ['plugins/*.py']},
-	install_requires=['pyyaml',],
+	package_data={"": ['skills/*.py']},
+	install_requires=['pyyaml','datetime','python-socketio[asyncio_client]'],
 	scripts=['bin/bluebubbles_bot'],
 	long_description=open('README.md').read(),
-	
 	zip_safe=True
 )

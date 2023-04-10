@@ -5,72 +5,11 @@ import sys
 import yaml
 import logging
 import argparse
-import bluebubbles_bot
-import inspect
-import importlib
-# Import your custom libraries here
-
-_plugin_map = {}
-_delegate_map = {}
-_initialized_plugins = []
-
-# Plugin loading code
-plugin_class = 'bluebubbles_bot'.strip('-').capitalize() + 'Plugin'
-def add_plugin(plugin,reload) :
-	"""Adds a given plugin and instance, reinitializing one if it already exists and such is specified."""
-	plugin_name = plugin.__module__.split('.')[-1]
-	if not reload and plugin_name in _plugin_map.keys():
-		pass
-	else :
-		# We can't startup the plugin here because it hasn't been configured. We'll handle that at runtime.
-		try:
-			# Remove any intialized objects of the same name, forcing a reinitialization
-			_initialized_plugins.remove(_plugin_map[plugin_name])
-		except:
-			pass
-		_plugin_map.update({plugin_name:plugin})
-
-def use_plugins(plugins,reload=False) :
-	"""Defines plugins that should be used in a lookup, optionally forcing them to reload."""
-	# Verify data
-	if type(plugins) != list :
-		raise ValueError('argument \'plugins\' should be of type list')
-	for plugin in plugins :
-		# Check if the plugin is a string or a descendent of a bluebubbles_bot-plugin class
-		if type(plugin) != str and plugin_class not in [x.__name__ for x in inspect.getmro(plugin)] :
-			raise ValueError('unkown type for plugin')
-		# Find plugins by name using a default path
-		if type(plugin) == str :
-			available_plugins = [y for x,y in search_plugins().items() if x == plugin and plugin_class in [z.__name__ for z in inspect.getmro(y)]]
-			if len(available_plugins) == 0 :
-				raise FileNotFoundError(plugin + '.py not found')
-			plugin = available_plugins[0]
-		if plugin_class in [x.__name__ for x in inspect.getmro(plugin)] :
-			add_plugin(plugin,reload)
-			continue
-
-def get_plugins() :
-	"""Returns a map of plugins configured and loaded."""
-	return _plugin_map
-
-def search_plugins(directory=None) :
-	"""Searches a given directory for compatible plugins and returns a map of available plugin names and classes."""
-	if not directory :
-		directory = '/'.join(os.path.realpath(__file__).split('/')[:-1]) + '/' + 'plugins'
-	directory = os.path.normpath(os.path.expanduser(os.path.expandvars(directory)))
-	name_map = {}
-	candidates = {x.split('.')[0]:x for x in os.listdir(directory) if x.endswith('.py')}
-	for name,filename in candidates.items() :
-		try :
-			spec = importlib.util.spec_from_file_location(name, directory + '/' + filename)
-			mod = importlib.util.module_from_spec(spec)
-			spec.loader.exec_module(mod)
-			instance = getattr(mod,plugin_class)
-			name_map.update({filename.split('.')[0]:instance})
-		except Exception as e :
-			# Handle plugin loading issues if desired
-			print("Unable to load plugin from " + filename + ": " + str(e))
-	return name_map
+import persona
+from typing import List
+from dataclasses import dataclass
+import datetime
+import socketio
 
 class LoggingFormatter(logging.Formatter):
 	def format(self, record):
@@ -117,8 +56,15 @@ if __name__ == '__main__':
 	logging.getLogger().handlers[0].setFormatter(LoggingFormatter())
 	logging.propagate=True
 
-	# Load plugins
-	available_plugins = search_plugins(directory='/'.join(os.path.realpath(__file__).split('/')[:-2]) + '/bluebubbles_bot/' + 'plugins')
-	use_plugins([x for x in available_plugins.values()])
-	# Main functions
-	print('Hello World!')
+	# Create persona instance
+	test = persona.Persona()
+
+	# Test Message
+	message = persona.Message(text="Hello",sender_identifier="Daniel",chat_identifier=None,attachments=[],timestamp=datetime.datetime.now(), recipients=[], identifier=None)
+	responses = test.receive_message(message)
+	for response in responses :
+		print('Bot responded with:')
+		print(response.text)
+
+	# Create socket connection
+	sio = socketio.AsyncClient()
