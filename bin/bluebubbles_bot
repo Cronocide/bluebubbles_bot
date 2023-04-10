@@ -9,6 +9,7 @@ import persona
 from typing import List
 from dataclasses import dataclass
 import datetime
+import requests
 import socketio
 
 class LoggingFormatter(logging.Formatter):
@@ -56,6 +57,11 @@ if __name__ == '__main__':
 	logging.getLogger().handlers[0].setFormatter(LoggingFormatter())
 	logging.propagate=True
 
+	# Check for missing environment variables
+	for required_var in ['BB_SERVER_URL','BB_SERVER_PASSWORD'] :
+		if required_var not in os.environ.keys() :
+			log.error(f'Missing required ENV variable {required_var}')
+			exit(1)
 	# Create persona instance
 	test = persona.Persona()
 
@@ -63,8 +69,13 @@ if __name__ == '__main__':
 	message = persona.Message(text="Hello",sender_identifier="Daniel",chat_identifier=None,attachments=[],timestamp=datetime.datetime.now(), recipients=[], identifier=None)
 	responses = test.receive_message(message)
 	for response in responses :
-		print('Bot responded with:')
-		print(response.text)
+		log.warning('Bot responded with:')
+		log.warning(response.text)
 
 	# Create socket connection
-	sio = socketio.AsyncClient()
+	sio = socketio.Client()
+	try :
+		sio.connect(os.environ['BB_SERVER_URL'])
+		log.info('Connected to server.')
+	except socketio.exceptions.ConnectionError as e:
+		log.error(str(e))

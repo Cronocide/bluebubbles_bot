@@ -10,7 +10,6 @@ import re
 class PersonaSkill(PersonaBaseSkill) :
 	"""A simple test skill that responds to the message 'Hello' with 'Hello!'"""
 	def match_intent(self,message: Message) -> Bool :
-		print(message.text)
 		matches = re.search('^Hello', message.text)
 		if matches :
 			return True
