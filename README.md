@@ -18,9 +18,9 @@ Example:
 	bluebubbles_bot -h
 ```
 
-bluebubbles_bot loads instances of the `PersonaSkill` class from python files in the [skills](/skills) folder.
+bluebubbles_bot loads instances of the `PersonaSkill` class from python files in the [skills](persona/skills) folder.
 You may configure the skill by specifying `startup` and `shutdown` functions to configure your skills as required.
-It will be helpful to follow the examples in the [skills](/skills) folder for designing your skills for the bot.
+It will be helpful to follow the examples in the [skills](persona/skills) folder for designing your skills for the bot.
 
 ## Installation
 
@@ -40,8 +40,6 @@ The following environment variables must be set to configure the bot:
 `BIND_PORT` : The port to bind to to receive callbacks from the BlueBubbles server.
 
 `USE_PRIVATE_API` : Whether or not to use the Private API in BlueBubbles. Default is `false`
-
-
 
 ## Justification
 
