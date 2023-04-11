@@ -37,6 +37,8 @@ The following environment variables must be set to configure the bot:
 
 `BB_SERVER_PASSWORD` : The password to the BlueBubbles server.
 
+`BIND_PORT` : The port to bind to to receive callbacks from the BlueBubbles server.
+
 `USE_PRIVATE_API` : Whether or not to use the Private API in BlueBubbles. Default is `false`
 
 
@@ -44,4 +46,3 @@ The following environment variables must be set to configure the bot:
 ## Justification
 
 Initially all I wanted to do was translate Apple Music links to Spotify links and vice-versa. But building platforms is more fun than building tools.
-

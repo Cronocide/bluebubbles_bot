@@ -60,7 +60,7 @@ if __name__ == '__main__':
 	logging.propagate=True
 
 	# Check for missing environment variables
-	for required_var in ['BB_SERVER_URL','BB_SERVER_PASSWORD'] :
+	for required_var in ['BB_SERVER_URL','BB_SERVER_PASSWORD','BIND_PORT'] :
 		if required_var not in os.environ.keys() :
 			log.error(f'Missing required ENV variable {required_var}')
 			exit(1)
@@ -148,4 +148,5 @@ if __name__ == '__main__':
 				send_message(response)
 		return content
 
-	uvicorn.run(bot,host='0.0.0.0', port=8080)
+	bind_port = int(os.environ['BIND_PORT'])
+	uvicorn.run(bot,host='0.0.0.0', port=bind_port)
