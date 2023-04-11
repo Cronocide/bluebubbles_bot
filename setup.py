@@ -55,7 +55,7 @@ setup(name='bluebubbles_bot',
 	packages=find_packages(exclude=['tests']),
 	package_data={"": ['skills/*.py']},
 	install_requires=['pyyaml','datetime','requests','fastapi[all]'],
-	scripts=['bin/bluebubbles_bot.py'],
+	scripts=['bin/bluebubbles_bot'],
 	long_description=open('README.md').read(),
 	zip_safe=True
 )
