@@ -24,17 +24,20 @@ It will be helpful to follow the examples in the [skills](/skills) folder for de
 
 ## Installation
 
-1. 
-2. 
-3. 
+1.
+2.
+3.
 
 ## Configuration
 
 The following environment variables must be set to configure the bot:
 
-```
+`BB_SERVER_URL` : The URL of the BlueBubbles server, including protocol and port.
 
-```
+`BB_SERVER_PASSWORD` : The password to the BlueBubbles server.
+
+`USE_PRIVATE_API` : Whether or not to use the Private API in BlueBubbles. Default is `false`
+
+
 
 ## Justification
-
