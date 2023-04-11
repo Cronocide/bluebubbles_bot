@@ -36,6 +36,7 @@ class Message :
 	timestamp: datetime.datetime
 	recipients: List[String]
 	identifier: str
+	meta: dict
 
 
 class PersonaBaseSkill() :

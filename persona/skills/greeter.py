@@ -19,4 +19,4 @@ class PersonaSkill(PersonaBaseSkill) :
 		"""Respond to a message by generating another message."""
 		response_options = ['Hello!','Howdy!','Hello there!','What\'s up!','Hi there!']
 		response_text = random.choice(response_options)
-		return persona.Message(text=response_text,sender_identifier=message.sender_identifier,chat_identifier=message.chat_identifier,attachments=[],timestamp=datetime.datetime.now(), recipients=[message.sender_identifier], identifier=None)
+		return persona.Message(text=response_text,sender_identifier=message.sender_identifier,chat_identifier=message.chat_identifier,attachments=[],timestamp=datetime.datetime.now(), recipients=[message.sender_identifier], identifier=None, meta={})

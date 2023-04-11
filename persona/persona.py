@@ -1,10 +1,24 @@
 from __future__ import annotations
 import os
 import inspect
+import logging
 import importlib
 from typing import List
 from dataclasses import dataclass
 import datetime
+
+class LoggingFormatter(logging.Formatter):
+	def format(self, record):
+		module_max_width = 30
+		datefmt='%Y/%m/%d/ %H:%M:%S'
+		level = f'[{record.levelname}]'.ljust(9)
+		if 'log_module' not in dir(record) :
+			modname = str(record.module)+'.'+str(record.name)
+		else :
+			modname = record.log_module
+		modname = (f'{modname}'[:module_max_width-1] + ']').ljust(module_max_width)
+		final = "%-7s %s [%s %s" % (self.formatTime(record, self.datefmt), level, modname, record.getMessage())
+		return final
 
 class Persona :
 	"""A class that represents state data for the chatbot. This is the personality for the bot.
@@ -18,6 +32,10 @@ class Persona :
 	skill_class = 'PersonaSkill'
 	ready_skills = {}
 	def __init__(self) :
+		# Enable logging
+		self.log = logging.getLogger(__name__)
+		self.log = logging.LoggerAdapter(self.log,{'log_module':'persona'})
+		logging.getLogger().handlers[0].setFormatter(LoggingFormatter())
 		# Load skills
 		available_skills = self.search_skills(directory='/'.join(os.path.realpath(__file__).split('/')[:-2]) + '/persona' + '/skills')
 		self.use_skills([x for x in available_skills.values()])
@@ -97,5 +115,6 @@ class Persona :
 			should_respond = skill.match_intent(message)
 			if should_respond :
 				response = skill.respond(message=message)
+				self.log.info(f'Responding to \'{message.text}\' with \'{response.text}\'')
 				generated_messages.append(response)
 		return generated_messages

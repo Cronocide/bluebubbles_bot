@@ -54,8 +54,8 @@ setup(name='bluebubbles_bot',
 	description='A chatbot for a local BlueBlubbles server.',
 	packages=find_packages(exclude=['tests']),
 	package_data={"": ['skills/*.py']},
-	install_requires=['pyyaml','datetime','python-socketio[asyncio_client]','requests','websocket-client'],
-	scripts=['bin/bluebubbles_bot'],
+	install_requires=['pyyaml','datetime','requests','fastapi[all]'],
+	scripts=['bin/bluebubbles_bot.py'],
 	long_description=open('README.md').read(),
 	zip_safe=True
 )
