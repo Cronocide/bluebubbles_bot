@@ -24,9 +24,10 @@ It will be helpful to follow the examples in the [skills](/skills) folder for de
 
 ## Installation
 
-1.
-2.
-3.
+As with most of my software, this can be installed as a python package or a Docker container.
+
+- `pip3 install bluebubbles_bot`
+- `docker build -t blue_bubbles_bot .`
 
 ## Configuration
 
@@ -41,3 +42,6 @@ The following environment variables must be set to configure the bot:
 
 
 ## Justification
+
+Initially all I wanted to do was translate Apple Music links to Spotify links and vice-versa. But building platforms is more fun than building tools.
+
