@@ -1,11 +1,10 @@
-FROM ubuntu
-ENV PROJ_NAME=python-tool
-
-# Install Python
-FROM python:3.10.6 as PYTHON
+FROM python:3.11 as PYTHON
+ENV PROJ_NAME=bluebubbles_bot
 
 # Copy project files
 ADD ./ /$PROJ_NAME
 
+RUN pip3 install /$PROJ_NAME
+
 # Run entrypoint
-ENTRYPOINT [""]
+ENTRYPOINT ["/usr/local/bin/$PROJ_NAME","-vv"]
