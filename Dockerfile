@@ -7,4 +7,4 @@ ADD ./ /$PROJ_NAME
 RUN pip3 install /$PROJ_NAME
 
 # Run entrypoint
-ENTRYPOINT ["/usr/local/bin/$PROJ_NAME","-vv"]
+ENTRYPOINT ["/usr/local/bin/bluebubbles_bot","-vv"]
