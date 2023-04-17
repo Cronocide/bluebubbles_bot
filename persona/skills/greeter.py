@@ -4,13 +4,26 @@ import persona
 from persona import PersonaBaseSkill
 from dataclasses import dataclass
 import datetime
+import logging
 import random
 import re
 
+BACKOFF_SEC = 30
+
 class PersonaSkill(PersonaBaseSkill) :
 	"""A simple test skill that responds to the message 'Hello' with 'Hello!'"""
+
+	def __init__(self) :
+		self.last_check = datetime.datetime.now().timestamp() - BACKOFF_SEC
+		self.log = logging.getLogger(__name__)
+		self.log = logging.LoggerAdapter(self.log,{'log_module':'greeter'})
+
 	def match_intent(self,message: Message) -> Bool :
-		matches = re.search('^Hello', message.text)
+		# Don't respond if you've responded already recently
+		if datetime.datetime.now().timestamp() < (self.last_check + BACKOFF_SEC) :
+			self.log.warn('Responding too fast, not responding again.')
+			return False
+		matches = re.search('^Hello$', message.text)
 		if matches :
 			return True
 		return False
