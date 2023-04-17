@@ -102,13 +102,24 @@ if __name__ == '__main__':
 			payload.update({'attachments':attachments})
 			url = os.environ['BB_SERVER_URL'].rstrip('/') + '/api/v1/message/attachment'
 		requests.post(url,params=params,json=payload)
+
+	def get_full_attachments(message: persona.Message) -> persona.Message :
+		"""Given a message with basic attachment descriptions, fetch the full attachment payloads from BlueBubbles"""
+		for attachment in message.attachments :
+			params = {'password': os.environ['BB_SERVER_PASSWORD']}
+			url = os.environ['BB_SERVER_URL'].rstrip('/') + '/api/v1/attachment/' + attachment.data
+			# log.debug(requests.get(url,params=params).text)
+			url = os.environ['BB_SERVER_URL'].rstrip('/') + '/api/v1/attachment/' + attachment.data + '/download'
+			content = requests.get(url,params=params).content
+			attachment.data = content
+		return message
 	# Create persona instance
 	current_persona = persona.Persona()
 
 	# Create a fastAPI instance
 	@bot.post('/message')
 	async def message(content: dict):
-		# print(content)
+		log.debug(content)
 		if content['type'] == 'new-message' :
 			message = content['data']
 			# Determine sender and receiver
@@ -121,9 +132,9 @@ if __name__ == '__main__':
 			# Resolve attachments
 			attachments = []
 			for attachment in message['attachments'] :
-				attachments.append(persona.Attachment(mime_type=message['attachments'][attachment]['mimeType'],data=message['attachments'][attachment]['guid']))
+				attachments.append(persona.Attachment(mime_type=attachment['mimeType'],data=attachment['guid']))
 			# Get the date sent
-			date_sent = datetime.datetime.fromtimestamp(message['dateCreated']/100)
+			date_sent = datetime.datetime.fromtimestamp(message['dateCreated']/1000)
 			# Get any effects or subjects
 			subject = ''
 			effect_id = ''
@@ -142,6 +153,7 @@ if __name__ == '__main__':
 				attachments=attachments,
 				meta={'subject': subject, 'effectId': effect_id}
 				)
+			persona_message = get_full_attachments(persona_message)
 			responses = current_persona.receive_message(persona_message)
 			for response in responses :
 				prompt = persona_message

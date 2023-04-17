@@ -115,6 +115,7 @@ class Persona :
 			should_respond = skill.match_intent(message)
 			if should_respond :
 				response = skill.respond(message=message)
-				self.log.info(f'Responding to \'{message.text}\' with \'{response.text}\'')
-				generated_messages.append(response)
+				if response :
+					self.log.info(f'Responding to \'{message.text}\' with \'{response.text}\'')
+					generated_messages.append(response)
 		return generated_messages
