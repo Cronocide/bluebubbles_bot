@@ -14,10 +14,10 @@ import re
 
 MAX_CHAT_CONTEXT = 20 # Max number of messages for the chat context
 BACKOFF_SEC = 30
-ON_TRIGGERS = ['^Go robo$','^cgpt$','welcome\ robot\ overlord','^[i,I]ntroducing\ [C,c]hat[g,G][P,p][T,t]']
-OFF_TRIGGERS = ['Stop$','^End$','^/stop$']
+ON_TRIGGERS = ['^Go robo$','^cgpt$','welcome\ robot?\ overlord','^[i,I]ntroducing\ [C,c]hat[g,G][P,p][T,t]','(Hey|Hello) ChatGPT']
+OFF_TRIGGERS = ['Stop$','^End$','^/stop$','^Done$']
 
-RESPONSE_PREAMBLE = ''
+RESPONSE_PREAMBLE = 'I\'d like you to respond as if you were a friend responding to text messages. Your responses should be casual but friendly and direct. Your responses should be short (no more than a few sentences) but properly punctuated. Use common texting abbreviations where appropriate.'
 
 class PersonaSkill(PersonaBaseSkill) :
 	"""A skill to use chatGPT to respond to messages for you.'"""
@@ -38,6 +38,8 @@ class PersonaSkill(PersonaBaseSkill) :
 		openai.api_key = self.api_key
 		if 'OPENAI_ORGANIZATION' in os.environ.keys() :
 			openai.organization = os.environ['OPENAI_ORGANIZATION']
+		if 'RESPONSE_PREAMBLE' in os.environ.keys() :
+			RESPONSE_PREAMBLE = os.environ['RESPONSE_PREAMBLE']
 
 	def match_intent(self,message: Message) -> Bool :
 		# Tag user and bot for API
@@ -62,6 +64,7 @@ class PersonaSkill(PersonaBaseSkill) :
 				matches = re.search(trigger, message.text)
 				if matches :
 					self.enabled_chats.append(message.chat_identifier)
+					self.chat_logs[message.chat_identifier].appendleft({'role': 'user', 'content': RESPONSE_PREAMBLE, 'name': sender})
 			# We are not responding to this chat and have not been asked to.
 			return False
 		else :
