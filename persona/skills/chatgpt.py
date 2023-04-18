@@ -69,7 +69,7 @@ class PersonaSkill(PersonaBaseSkill) :
 			for trigger in OFF_TRIGGERS :
 				matches = re.search(trigger, message.text)
 				if matches :
-					self.enabled_chats.remove(message.chat_dentifier)
+					self.enabled_chats.remove(message.chat_identifier)
 					return False
 			# We are responding in this chat and have not been asked to stop.
 			return True
