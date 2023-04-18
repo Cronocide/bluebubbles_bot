@@ -41,6 +41,18 @@ The following environment variables must be set to configure the bot:
 
 `USE_PRIVATE_API` : Whether or not to use the Private API in BlueBubbles. Default is `false`
 
+## Configuring Skills
+
+Each skill consumes it's own environment variables to configure and run. Here are some of the configurable options for the included skills:
+
+### chatgpt.py
+
+`OPENAI_API_KEY` : The API key to OpenAI, from OpenAI.
+
+`OPENAI_ORGANIZATION` : The Organization ID from OpenAI.
+
+`RESPONSE_PREAMBLE` : Instructions to ChatGPT for how it should respond and behave, given as a preamble for any conversation with it. A default preamble is provided (see [persona/skills/chatgpt.py](chatgpt.py).
+
 ## Justification
 
 Initially all I wanted to do was translate Apple Music links to Spotify links and vice-versa. But building platforms is more fun than building tools.

@@ -102,10 +102,14 @@ class Persona :
 	def startup(self) :
 		"""Startup all message skill processors"""
 		for skill in self._skill_map.keys() :
-			ClassInstance = self._skill_map[skill]
-			skillinstance = ClassInstance()
-			skillinstance.startup()
-			self.ready_skills.update({skill:skillinstance})
+			try :
+				ClassInstance = self._skill_map[skill]
+				skillinstance = ClassInstance()
+				skillinstance.startup()
+				self.ready_skills.update({skill:skillinstance})
+			except Exception as e :
+				self.log.error(str(e))
+				continue
 
 
 	def receive_message(self,message: Message) :

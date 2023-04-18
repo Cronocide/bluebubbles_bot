@@ -123,11 +123,11 @@ if __name__ == '__main__':
 		if content['type'] == 'new-message' :
 			message = content['data']
 			# Determine sender and receiver
-			if message['isFromMe'] :
+			if not message['isFromMe'] :
 				sender = message['handle']['address']
 				recipients = []
 			else :
-				sender = None
+				sender = 'Me'
 				recipients = [message['handle']['address']]
 			# Resolve attachments
 			attachments = []
@@ -138,10 +138,13 @@ if __name__ == '__main__':
 			# Get any effects or subjects
 			subject = ''
 			effect_id = ''
+			isfromme = False
 			if 'subject' in message.keys() :
 				subject = message['subject']
 			if 'expressiveSendStyleId' in message.keys() :
 				effect_id = message['expressiveSendStyleId']
+			if 'isFromMe' in message.keys() :
+				isfromme = message['isFromMe']
 			# Craft the message
 			persona_message = persona.Message(
 				text=message['text'],
@@ -151,7 +154,7 @@ if __name__ == '__main__':
 				timestamp=date_sent,
 				recipients=recipients,
 				attachments=attachments,
-				meta={'subject': subject, 'effectId': effect_id}
+				meta={'subject': subject, 'effectId': effect_id,'isFromMe': isfromme}
 				)
 			persona_message = get_full_attachments(persona_message)
 			responses = current_persona.receive_message(persona_message)
