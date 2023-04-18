@@ -74,6 +74,8 @@ class PersonaSkill(PersonaBaseSkill) :
 				if matches :
 					self.enabled_chats.remove(message.chat_identifier)
 					return False
+			if message.meta['isFromMe'] :
+				return False
 			# We are responding in this chat and have not been asked to stop.
 			return True
 
