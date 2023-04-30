@@ -85,6 +85,6 @@ class PersonaSkill(PersonaBaseSkill) :
 			# Get a completion from OpenAI by sending the last MAX_CHAT_CONTEXT messages to the bot.
 			completion = openai.ChatCompletion.create(model='gpt-3.5-turbo', messages=list(self.chat_logs[message.chat_identifier]))
 			response = completion.choices[0].message.content
-			return persona.Message(text=response,sender_identifier=message.sender_identifier,chat_identifier=message.chat_identifier,attachments=[],timestamp=datetime.datetime.now(), recipients=[message.sender_identifier], identifier=None, meta={})
+			return persona.Message(text=response,sender_identifier=message.sender_identifier,chat_identifier=message.chat_identifier,attachments=[],timestamp=datetime.datetime.now()+datetime.timedelta(seconds=random.randrange(5,15)), recipients=[message.sender_identifier], identifier=None, meta={})
 		except openai.error.RateLimitError as e :
 			raise persona.PersonaResponseException(str(e))
