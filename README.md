@@ -53,6 +53,22 @@ Each skill consumes it's own environment variables to configure and run. Here ar
 
 `RESPONSE_PREAMBLE` : Instructions to ChatGPT for how it should respond and behave, given as a preamble for any conversation with it. A default preamble is provided (see [persona/skills/chatgpt.py](chatgpt.py).
 
+## Writing Skills
+
+Writing new skills is simple. Copy a skill from the [persona/skills/](skills) folder to a different name and modify these three functions:
+
+`match_intent` : This should return true if your skill should respond to a message
+
+`respond` : Return a message object to a chat
+
+`generate` : Create a new message object to be sent to a chat
+
+Additional you can use these two functions to start up and shut down your skill:
+
+`startup` : Do any work your skill needs to get ready
+
+`shutdown` : Do any work your skill needs to clean up
+
 ## Justification
 
 Initially all I wanted to do was translate Apple Music links to Spotify links and vice-versa. But building platforms is more fun than building tools.
