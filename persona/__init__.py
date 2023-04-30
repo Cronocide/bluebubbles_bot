@@ -64,3 +64,10 @@ class PersonaBaseSkill() :
 		   This is called after the intent has been matched and the skill should produce a response.
 		   The Persona may modify the message, including its recipients, timestamp, or content."""
 		raise PersonaResponseException('This skill is not implemented to respond.')
+
+	def generate(self) -> Message :
+		"""Asynchronously generate a message.
+		   This function should return None 99% of the time.
+		   This is called frequently in a spin-lock, so treat any code executed here as a while loop.
+		   The Persona may modify the message, including its recipients, timestamp, or content."""
+		return None

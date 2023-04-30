@@ -6,6 +6,9 @@ import importlib
 from typing import List
 from dataclasses import dataclass
 import datetime
+import queue
+import threading
+import time
 
 class LoggingFormatter(logging.Formatter):
 	def format(self, record):
@@ -31,15 +34,24 @@ class Persona :
 	skill_class = 'Persona'.strip('-').capitalize() + 'Skill'
 	skill_class = 'PersonaSkill'
 	ready_skills = {}
-	def __init__(self) :
+	outbound_messages = queue.Queue()
+
+	def __init__(self, multiprocess_queue=None) :
 		# Enable logging
 		self.log = logging.getLogger(__name__)
 		self.log = logging.LoggerAdapter(self.log,{'log_module':'persona'})
 		logging.getLogger().handlers[0].setFormatter(LoggingFormatter())
+		# Configure multiprocessing if requested
+		if multiprocess_queue :
+			self.outbound_messages = multiprocess_queue
 		# Load skills
 		available_skills = self.search_skills(directory='/'.join(os.path.realpath(__file__).split('/')[:-2]) + '/persona' + '/skills')
 		self.use_skills([x for x in available_skills.values()])
 		self.startup()
+		# Kickoff async message generation checker
+		message_generator = threading.Thread(target=self.send_new_message)
+		message_generator.daemon = True
+		message_generator.start()
 
 	# loading code
 	def add_skill(self,skill,reload) :
@@ -96,7 +108,7 @@ class Persona :
 				name_map.update({filename.split('.')[0]:instance})
 			except Exception as e :
 				# Handle skill loading issues if desired
-				print("Unable to load skill from " + filename + ": " + str(e))
+				self.log.error("Unable to load skill from " + filename + ": " + str(e))
 		return name_map
 
 	def startup(self) :
@@ -111,15 +123,24 @@ class Persona :
 				self.log.error(str(e))
 				continue
 
-
 	def receive_message(self,message: Message) :
 		"""Process the receipt of a message."""
-		generated_messages = []
 		for skill in self.ready_skills.values() :
 			should_respond = skill.match_intent(message)
 			if should_respond :
 				response = skill.respond(message=message)
 				if response :
 					self.log.info(f'Responding to \'{message.text}\' with \'{response.text}\'')
+					self.outbound_messages.put(response)
+		# self.outbound_messages += generated_messages
+
+	def send_new_message(self) :
+		"""Process new messages generated asynchronously by plugins."""
+		while True :
+			for skill in self.ready_skills.values() :
+				response = skill.generate()
+				if response :
+					self.log.info(f'Generating async message \'{response.text}\'')
 					generated_messages.append(response)
-		return generated_messages
+					self.outbound_messages.put(response)
+			time.sleep(1)

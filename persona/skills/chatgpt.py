@@ -44,7 +44,7 @@ class PersonaSkill(PersonaBaseSkill) :
 	def match_intent(self,message: Message) -> Bool :
 		# Tag user and bot for API
 		if message.meta['isFromMe'] :
-			role = 'system'
+			role = 'assistant'
 		else :
 			role = 'user'
 		# Record chat messages for context

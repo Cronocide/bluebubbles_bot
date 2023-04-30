@@ -2,6 +2,7 @@
 
 import os
 import sys
+import time
 import yaml
 import uuid
 import logging
@@ -11,7 +12,9 @@ from typing import List
 from dataclasses import dataclass
 import datetime
 import requests
-from fastapi import FastAPI
+from fastapi import BackgroundTasks, FastAPI
+import queue
+import threading
 import uvicorn
 
 class LoggingFormatter(logging.Formatter):
@@ -101,7 +104,7 @@ if __name__ == '__main__':
 				attachments.append(file)
 			payload.update({'attachments':attachments})
 			url = os.environ['BB_SERVER_URL'].rstrip('/') + '/api/v1/message/attachment'
-		requests.post(url,params=params,json=payload)
+		requests.post(url,params=params,json=payload,timeout=(1, 3))
 
 	def get_full_attachments(message: persona.Message) -> persona.Message :
 		"""Given a message with basic attachment descriptions, fetch the full attachment payloads from BlueBubbles"""
@@ -113,13 +116,33 @@ if __name__ == '__main__':
 			content = requests.get(url,params=params).content
 			attachment.data = content
 		return message
+
+	def schedule_responses(message_queue) :
+		"""Iterate through the outbound message queue and dispatch scheduled messages."""
+		while True :
+			message = message_queue.get()
+			if message.timestamp < datetime.datetime.now() :
+				try :
+					send_message(message)
+				except requests.exceptions.ReadTimeout :
+					log.warning('No receipt of acknowledgement from BlueBubbles server')
+			else :
+				message_queue.put(message)
+			time.sleep(1)
+
+	# Configure multithreading response queue
+	outbound_message_queue = queue.Queue()
 	# Create persona instance
-	current_persona = persona.Persona()
+	current_persona = persona.Persona(multiprocess_queue=outbound_message_queue)
+	# Kickoff message generation sender
+	message_sender = threading.Thread(target=schedule_responses, args=[outbound_message_queue])
+	message_sender.daemon = True
+	message_sender.start()
 
 	# Create a fastAPI instance
 	@bot.post('/message')
-	async def message(content: dict):
-		log.debug(content)
+	async def message(content: dict,background_tasks: BackgroundTasks) :
+		# log.debug(content)
 		if content['type'] == 'new-message' :
 			message = content['data']
 			# Determine sender and receiver
@@ -157,11 +180,10 @@ if __name__ == '__main__':
 				meta={'subject': subject, 'effectId': effect_id,'isFromMe': isfromme}
 				)
 			persona_message = get_full_attachments(persona_message)
-			responses = current_persona.receive_message(persona_message)
-			for response in responses :
-				prompt = persona_message
-				send_message(response)
-		return content
+			background_tasks.add_task(current_persona.receive_message, persona_message)
+		return {'status': 'ok'}
 
+
+	# Start Uvicorn process and async message response scheduler
 	bind_port = int(os.environ['BIND_PORT'])
 	uvicorn.run(bot,host='0.0.0.0', port=bind_port)
