@@ -132,7 +132,6 @@ class Persona :
 				if response :
 					self.log.info(f'Responding to \'{message.text}\' with \'{response.text}\'')
 					self.outbound_messages.put(response)
-		# self.outbound_messages += generated_messages
 
 	def send_new_message(self) :
 		"""Process new messages generated asynchronously by plugins."""
@@ -141,6 +140,5 @@ class Persona :
 				response = skill.generate()
 				if response :
 					self.log.info(f'Generating async message \'{response.text}\'')
-					generated_messages.append(response)
 					self.outbound_messages.put(response)
 			time.sleep(1)
