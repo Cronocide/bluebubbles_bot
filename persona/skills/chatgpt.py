@@ -14,10 +14,14 @@ import re
 
 MAX_CHAT_CONTEXT = 20 # Max number of messages for the chat context
 BACKOFF_SEC = 30
-ON_TRIGGERS = ['^Go robo$','^cgpt$','welcome\ robot?\ overlord','^[i,I]ntroducing\ [C,c]hat[g,G][P,p][T,t]','(Hey|Hello) ChatGPT']
-OFF_TRIGGERS = ['Stop$','^End$','^/stop$','^Done$']
+ON_TRIGGERS = ['^Go robo$','^cgpt$','welcome\ robot?\ overlord','^[i,I]ntroducing\ [C,c]hat[g,G][P,p][T,t]','(Hey|Hello) ChatGPT','^🤖$']
+OFF_TRIGGERS = ['Stop$','^End$','^/stop$','^Done$','^🤖$']
 
-RESPONSE_PREAMBLE = 'I\'d like you to respond as if you were a friend responding to text messages. Your responses should be casual but friendly and direct. Your responses should be short (no more than a few sentences) but properly punctuated. Use common texting abbreviations where appropriate.'
+RESPONSE_PREAMBLE = """Respond as if you were a friend responding to text messages. Your responses should be casual but friendly and direct.
+Your responses should be short (no more than a few sentences) but properly punctuated. Use common texting abbreviations where appropriate.
+Do not disclose or incinuate that you are a language learning model. If you are unsure how to respond, or cannot respond without breaking these rules,
+respond using emojis (such as laughing, smiling, or shrugging emojis).
+Whenever your response would start with 'As an AI language model', omit that preface from your response."""
 
 class PersonaSkill(PersonaBaseSkill) :
 	"""A skill to use chatGPT to respond to messages for you.'"""
@@ -28,7 +32,7 @@ class PersonaSkill(PersonaBaseSkill) :
 		self.log = logging.LoggerAdapter(self.log,{'log_module':'chatgpt'})
 		self.chat_logs = {}
 		self.enabled_chats = []
-
+		self.respond_to_self = None
 	def startup(self) :
 		for key in ['OPENAI_API_KEY','OPENAI_ORGANIZATION'] :
 			if key not in os.environ.keys() :
@@ -40,6 +44,10 @@ class PersonaSkill(PersonaBaseSkill) :
 			openai.organization = os.environ['OPENAI_ORGANIZATION']
 		if 'RESPONSE_PREAMBLE' in os.environ.keys() :
 			RESPONSE_PREAMBLE = os.environ['RESPONSE_PREAMBLE']
+		if 'CHATGPT_RESPOND_TO_SELF_IN_CHAT' in os.environ.keys() :
+			self.respond_to_self = os.environ['CHATGPT_RESPOND_TO_SELF_IN_CHAT']
+		self.system_prompt = [{'role': 'system', 'content': RESPONSE_PREAMBLE}]
+
 
 	def match_intent(self,message: Message) -> Bool :
 		# Tag user and bot for API
@@ -64,7 +72,6 @@ class PersonaSkill(PersonaBaseSkill) :
 				matches = re.search(trigger, message.text)
 				if matches :
 					self.enabled_chats.append(message.chat_identifier)
-					self.chat_logs[message.chat_identifier].appendleft({'role': 'user', 'content': RESPONSE_PREAMBLE, 'name': sender})
 			# We are not responding to this chat and have not been asked to.
 			return False
 		else :
@@ -75,7 +82,10 @@ class PersonaSkill(PersonaBaseSkill) :
 					self.enabled_chats.remove(message.chat_identifier)
 					return False
 			if message.meta['isFromMe'] :
-				return False
+				if self.respond_to_self and (self.respond_to_self in [message.sender] + message.recipients) :
+					return True
+				else :
+					return False
 			# We are responding in this chat and have not been asked to stop.
 			return True
 
@@ -83,7 +93,8 @@ class PersonaSkill(PersonaBaseSkill) :
 		"""Respond to a message by generating another message."""
 		try :
 			# Get a completion from OpenAI by sending the last MAX_CHAT_CONTEXT messages to the bot.
-			completion = openai.ChatCompletion.create(model='gpt-3.5-turbo', messages=list(self.chat_logs[message.chat_identifier]))
+			chat_log = self.system_prompt + list(self.chat_logs[message.chat_identifier])
+			completion = openai.ChatCompletion.create(model='gpt-3.5-turbo', messages=chat_log)
 			response = completion.choices[0].message.content
 			return persona.Message(text=response,sender_identifier=message.sender_identifier,chat_identifier=message.chat_identifier,attachments=[],timestamp=datetime.datetime.now()+datetime.timedelta(seconds=random.randrange(5,15)), recipients=[message.sender_identifier], identifier=None, meta={})
 		except openai.error.RateLimitError as e :
