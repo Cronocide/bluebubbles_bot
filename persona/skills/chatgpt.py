@@ -82,7 +82,7 @@ class PersonaSkill(PersonaBaseSkill) :
 					self.enabled_chats.remove(message.chat_identifier)
 					return False
 			if message.meta['isFromMe'] :
-				if self.respond_to_self and (self.respond_to_self in [message.sender] + message.recipients) :
+				if self.respond_to_self and (self.respond_to_self in [sender] + message.recipients) :
 					return True
 				else :
 					return False
