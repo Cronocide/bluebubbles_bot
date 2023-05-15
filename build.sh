@@ -144,6 +144,7 @@ cicd_publish() {
 
 cicd_deploy() {
 	echo "Deploying Software"
+	__missing_reqs "nomad" && exit 1
 	# TODO: Check for a nomad folder
 	if ! [ -f "$PROJECT_NAME".hcl ]; then
 		__http_get "https://setup.cronocide.com/nomad/base.hcl" "$PROJECT_NAME".hcl
