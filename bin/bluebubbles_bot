@@ -142,7 +142,7 @@ if __name__ == '__main__':
 	# Create a fastAPI instance
 	@bot.post('/message')
 	async def message(content: dict,background_tasks: BackgroundTasks) :
-		# log.debug(content)
+		log.debug(content)
 		if content['type'] == 'new-message' :
 			message = content['data']
 			# Determine sender and receiver
