@@ -45,14 +45,17 @@ class PersonaSkill(PersonaBaseSkill) :
 		if 'RESPONSE_PREAMBLE' in os.environ.keys() :
 			RESPONSE_PREAMBLE = os.environ['RESPONSE_PREAMBLE']
 		if 'CHATGPT_RESPOND_TO_SELF_IN_CHAT' in os.environ.keys() :
-			self.respond_to_self = os.environ['CHATGPT_RESPOND_TO_SELF_IN_CHAT']
+			self.respond_to_self = os.environ['CHATGPT_RESPOND_TO_SELF_IN_CHAT'].split(',')
 		self.system_prompt = [{'role': 'system', 'content': RESPONSE_PREAMBLE}]
 
 
 	def match_intent(self,message: Message) -> Bool :
 		# Tag user and bot for API
 		if message.meta['isFromMe'] :
-			role = 'assistant'
+			if self.respond_to_self and (len([x for x in self.respond_to_self if x in list(set([message.sender_identifier] + message.recipients))])) > 0 :
+				role = 'user'
+			else :
+				role = 'assistant'
 		else :
 			role = 'user'
 		# Record chat messages for context
@@ -60,7 +63,9 @@ class PersonaSkill(PersonaBaseSkill) :
 		if message.chat_identifier not in self.chat_logs.keys() :
 			self.chat_logs.update({message.chat_identifier: deque([{'role': role, 'content': message.text, 'name': sender}], maxlen=MAX_CHAT_CONTEXT)})
 		else :
-			self.chat_logs[message.chat_identifier].append({'role': role, 'content': message.text, 'name': sender})
+			if message.text not in  [x['content'] for x in self.chat_logs[message.chat_identifier]] :
+				self.chat_logs[message.chat_identifier].append({'role': role, 'content': message.text, 'name': sender})
+		self.log.debug(f'Chat log for {message.chat_identifier}: {list(self.chat_logs[message.chat_identifier])}')
 		# Don't respond if you've responded already recently
 		if datetime.datetime.now().timestamp() < (self.last_check + BACKOFF_SEC) :
 			self.log.warn('Responding too fast, not responding again.')
@@ -72,6 +77,7 @@ class PersonaSkill(PersonaBaseSkill) :
 				matches = re.search(trigger, message.text)
 				if matches :
 					self.enabled_chats.append(message.chat_identifier)
+					self.chat_logs[message.chat_identifier].pop()
 			# We are not responding to this chat and have not been asked to.
 			return False
 		else :
@@ -82,7 +88,7 @@ class PersonaSkill(PersonaBaseSkill) :
 					self.enabled_chats.remove(message.chat_identifier)
 					return False
 			if message.meta['isFromMe'] :
-				if self.respond_to_self and (self.respond_to_self in list(set([sender] + message.recipients))) :
+				if self.respond_to_self and (len([x for x in self.respond_to_self if x in list(set([message.sender_identifier] + message.recipients))])) > 0 :
 					return True
 				else :
 					return False
