@@ -2,7 +2,7 @@
 
 ## A chatbot for a local BlueBlubbles server.
 
-![Build Status](https://jenkins.cronocide.net/buildStatus/icon?job=git.cronocide.net%2Fbluebubbles-bot%2Fmaster)
+![Build Status](https://jenkins.cronocide.net/buildStatus/icon?job=git.cronocide.net%2Fbluebubbles-bot%2Fmaster?subject=Jenkins%20Build)
 
 ## Usage
 
