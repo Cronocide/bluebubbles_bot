@@ -50,7 +50,7 @@ class PersonaSkill(PersonaBaseSkill) :
 			RESPONSE_PREAMBLE = os.environ['RESPONSE_PREAMBLE']
 		if 'CHATGPT_RESPOND_TO_SELF_IN_CHAT' in os.environ.keys() :
 			self.respond_to_self = os.environ['CHATGPT_RESPOND_TO_SELF_IN_CHAT'].split(',')
-		self.client = OpenAI(api_key=self.api_key,organization=ORGANIZATION)
+		self.apiclient = OpenAI(api_key=self.api_key,organization=ORGANIZATION)
 		self.system_prompt = [{'role': 'system', 'content': RESPONSE_PREAMBLE}]
 
 
