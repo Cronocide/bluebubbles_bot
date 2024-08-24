@@ -8,6 +8,8 @@ import datetime
 import logging
 import random
 import openai
+from openai import OpenAI
+
 import os
 import re
 
@@ -17,6 +19,7 @@ BACKOFF_SEC = 30
 ON_TRIGGERS = ['^Go robo$','^cgpt$','welcome\ robot?\ overlord','^[i,I]ntroducing\ [C,c]hat[g,G][P,p][T,t]','(Hey|Hello) ChatGPT','^🤖$']
 OFF_TRIGGERS = ['Stop$','^End$','^/stop$','^Done$','^🤖$']
 
+ORGANIZATION= ''
 RESPONSE_PREAMBLE = """Respond as if you were a friend responding to text messages. Your responses should be casual but friendly and direct.
 Your responses should be short (no more than a few sentences) but properly punctuated. Use common texting abbreviations where appropriate.
 Do not disclose or incinuate that you are a language learning model. If you are unsure how to respond, or cannot respond without breaking these rules,
@@ -32,6 +35,7 @@ class PersonaSkill(PersonaBaseSkill) :
 		self.log = logging.LoggerAdapter(self.log,{'log_module':'chatgpt'})
 		self.chat_logs = {}
 		self.enabled_chats = []
+		self.apiclient = None
 		self.respond_to_self = None
 	def startup(self) :
 		for key in ['OPENAI_API_KEY','OPENAI_ORGANIZATION'] :
@@ -39,13 +43,14 @@ class PersonaSkill(PersonaBaseSkill) :
 				raise persona.PersonaStartupException(f'Missing required ENV var {key}')
 				return None
 		self.api_key = os.environ['OPENAI_API_KEY']
-		openai.api_key = self.api_key
 		if 'OPENAI_ORGANIZATION' in os.environ.keys() :
-			openai.organization = os.environ['OPENAI_ORGANIZATION']
+			# TODO: The 'openai.organization' option isn't read in the client API. You will need to pass it when you instantiate the client, e.g. 'OpenAI(organization=os.environ['OPENAI_ORGANIZATION'])'
+			ORGANIZATION = os.environ['OPENAI_ORGANIZATION']
 		if 'RESPONSE_PREAMBLE' in os.environ.keys() :
 			RESPONSE_PREAMBLE = os.environ['RESPONSE_PREAMBLE']
 		if 'CHATGPT_RESPOND_TO_SELF_IN_CHAT' in os.environ.keys() :
 			self.respond_to_self = os.environ['CHATGPT_RESPOND_TO_SELF_IN_CHAT'].split(',')
+		self.client = OpenAI(api_key=self.api_key,organization=ORGANIZATION)
 		self.system_prompt = [{'role': 'system', 'content': RESPONSE_PREAMBLE}]
 
 
@@ -100,8 +105,8 @@ class PersonaSkill(PersonaBaseSkill) :
 		try :
 			# Get a completion from OpenAI by sending the last MAX_CHAT_CONTEXT messages to the bot.
 			chat_log = self.system_prompt + list(self.chat_logs[message.chat_identifier])
-			completion = openai.ChatCompletion.create(model='gpt-3.5-turbo', messages=chat_log)
+			completion = self.apiclient.chat.completions.create(model='gpt-3.5-turbo', messages=chat_log)
 			response = completion.choices[0].message.content
 			return persona.Message(text=response,sender_identifier=message.sender_identifier,chat_identifier=message.chat_identifier,attachments=[],timestamp=datetime.datetime.now()+datetime.timedelta(seconds=random.randrange(5,15)), recipients=[message.sender_identifier], identifier=None, meta={})
-		except openai.error.RateLimitError as e :
+		except openai.RateLimitError as e :
 			raise persona.PersonaResponseException(str(e))
