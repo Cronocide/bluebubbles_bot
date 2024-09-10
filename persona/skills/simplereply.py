@@ -45,9 +45,8 @@ class PersonaSkill(PersonaBaseSkill) :
 					response_options = SIMPLE_REPLIES[trigger]
 					break
 			response_text = random.choice(response_options)
-			response = SIMPLE_REPLIES[message.text]
 			return persona.Message(
-				text=response,
+				text=response_text,
 				sender_identifier=message.sender_identifier,
 				chat_identifier=message.chat_identifier,
 				attachments=[],
