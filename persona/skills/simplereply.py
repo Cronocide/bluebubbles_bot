@@ -29,8 +29,8 @@ class PersonaSkill(PersonaBaseSkill) :
 		if datetime.datetime.now().timestamp() < (self.last_check + BACKOFF_SEC) :
 			self.log.warn('Responding too fast, not responding again.')
 			return False
-		for trigger in SIMPLE_RELIES.keys() :
-			matches = re.search(SIMPLE_RELIES[trigger], message.text)
+		for trigger in SIMPLE_REPLIES.keys() :
+			matches = re.search(SIMPLE_REPLIES[trigger], message.text)
 			if matches :
 				return True
 		return False
@@ -39,7 +39,7 @@ class PersonaSkill(PersonaBaseSkill) :
 	def respond(self, message: Message) -> Message :
 		"""Respond to a message by generating another message."""
 		try :
-			for trigger in SIMPLE_RELIES.keys() :
+			for trigger in SIMPLE_REPLIES.keys() :
 				matches = re.search(SIMPLE_REPLIES[trigger], message.text)
 				if matches :
 					response_options = SIMPLE_REPLIES[trigger]
