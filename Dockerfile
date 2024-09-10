@@ -1,4 +1,4 @@
-FROM python:3.11 as PYTHON
+FROM python:3.12 as PYTHON
 ENV PROJ_NAME=bluebubbles_bot
 
 # Copy project files
