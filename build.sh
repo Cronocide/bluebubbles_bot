@@ -81,6 +81,12 @@ error() {
 	echo "$@" 1>&2
 }
 
+# Provide a reliable ISO 8601 timestamp.
+isotime() {
+	[[ "$OS" == "Linux" ]] && echo $(date --iso-8601=seconds) && return 0
+	echo $(date +"%Y-%m-%dT%H:%M:%S%z" | sed 's#\(-[0-9]\{2\}\)00#\1:00#')
+}
+
 #  ___ _   _ _  _  ___ _____ ___ ___  _  _ ___
 # | __| | | | \| |/ __|_   _|_ _/ _ \| \| / __|
 # | _|| |_| | .` | (__  | |  | | (_) | .` \__ \
@@ -113,7 +119,7 @@ cicd_build() {
              --label "net.cronocide.build-info.git-repo=${GIT_URL}" \
              --label "net.cronocide.build-info.git-branch=${GIT_BRANCH}" \
              --label "net.cronocide.build-info.git-commit=${GIT_COMMIT}" \
-             --label "net.cronocide.build-info.build-time=$(date -u)" \
+             --label "net.cronocide.build-info.build-time=$(isotime)" \
              --tag="$COMMIT_TAG" \
 	     --tag="$LATEST_TAG" \
              .
@@ -144,7 +150,6 @@ cicd_publish() {
 
 cicd_deploy() {
 	echo "Deploying Software"
-	__missing_reqs "nomad" && exit 1
 	# TODO: Check for a nomad folder
 	if ! [ -f "$PROJECT_NAME".hcl ]; then
 		__http_get "https://setup.cronocide.com/nomad/base.hcl" "$PROJECT_NAME".hcl
@@ -157,6 +162,11 @@ cicd_deploy() {
 		nomad job run "$PROJECT_NAME".hcl
 	fi
 	echo "Completed Deploying Software"
+}
+
+prepare_devenv() {
+	# Place actions here to prepare the environment for development
+	echo
 }
 
 #  __  __   _   ___ _  _
@@ -172,11 +182,22 @@ BUILD_PREFIX="cicd"
 [[ "$ACTION" != "$BUILD_PREFIX"* ]] && error "Action $ACTION is not recognized as a valid action."
 __no_req "$ACTION" && error "Action $ACTION is not recognized as a valid action." && exit 1
 
+# Fill in variables if not supplied by CICD
+[ -z "$USERN" ] && export USERN=cronocide
+[ -z "$GIT_REPO_NAME" ] && export GIT_REPO_NAME=git.cronocide.net
+
+# Update submodules if the build system did not
+git submodule update --init --recursive
+
+# Prepare build system
+prepare_devenv
+
 # Define needed build strings
 DIR=$(cd $(dirname $BASH_SOURCE[0]) && pwd)
-PROJECT_NAME="$(git config --local remote.origin.url|sed -n 's#.*/\([^.]*\)\.git#\1#p')"
-IMAGE_NAME="$GIT_REPO_NAME/$USERN/$PROJECT_NAME"
+PROJECT_NAME="$(git config --local remote.origin.url|sed -n 's#.*/\([^/.]*\)\(\.git\)\{0,1\}$#\1#p')"
+IMAGE_NAME=$(echo "$GIT_REPO_NAME/$USERN/$PROJECT_NAME" | tr "[:upper:]" "[:lower:]")
 GIT_COMMIT=$(git rev-parse HEAD)
+GIT_COMMITTER=$(git log -1 --pretty=format:'%ae')
 GIT_URL=$(git config --get remote.origin.url)
 GIT_BRANCH=$(git branch | grep \* | cut -d ' ' -f2)
 COMMIT_TAG="${IMAGE_NAME}:${GIT_COMMIT}"
