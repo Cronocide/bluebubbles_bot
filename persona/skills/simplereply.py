@@ -30,7 +30,7 @@ class PersonaSkill(PersonaBaseSkill) :
 			self.log.warn('Responding too fast, not responding again.')
 			return False
 		for trigger in SIMPLE_REPLIES.keys() :
-			matches = re.search(SIMPLE_REPLIES[trigger], message.text)
+			matches = re.search(trigger, message.text)
 			if matches :
 				return True
 		return False
@@ -40,7 +40,7 @@ class PersonaSkill(PersonaBaseSkill) :
 		"""Respond to a message by generating another message."""
 		try :
 			for trigger in SIMPLE_REPLIES.keys() :
-				matches = re.search(SIMPLE_REPLIES[trigger], message.text)
+				matches = re.search(trigger, message.text)
 				if matches :
 					response_options = SIMPLE_REPLIES[trigger]
 					break
