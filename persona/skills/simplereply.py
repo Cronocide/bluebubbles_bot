@@ -9,7 +9,7 @@ import random
 import os
 import re
 
-BACKOFF_SEC = 10
+BACKOFF_SEC = 30
 SIMPLE_REPLIES = {
 	'^😘🍕$': ['😘🍕'],
 	'^🍕😘$': ['😘🍕'],
