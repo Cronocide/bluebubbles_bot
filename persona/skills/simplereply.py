@@ -11,10 +11,10 @@ import re
 
 BACKOFF_SEC = 30
 SIMPLE_REPLIES = {
-	'^😘🍕$': ['😘🍕'],
 	'^🍕😘$': ['😘🍕'],
 	'^Why did the .* cross the road\?': ['To get to the other side!'],
-	'^Hello$': ['Hello!','Howdy!','Hello there!','What\'s up!','Hi there!']
+	'^Hello$': ['Hello!','Howdy!','Hello there!','What\'s up!','Hi there!'],
+	'^You there?$': ['bluebubblesbot ready']
 }
 class PersonaSkill(PersonaBaseSkill) :
 	"""A skill to automatically respond to specific keyword combinations.'"""
