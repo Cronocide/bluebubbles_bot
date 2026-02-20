@@ -41,7 +41,6 @@ class PersonaSkill(PersonaBaseSkill) :
 		for key in ['OPENAI_API_KEY','OPENAI_ORGANIZATION'] :
 			if key not in os.environ.keys() :
 				raise persona.PersonaStartupException(f'Missing required ENV var {key}')
-				return None
 		self.api_key = os.environ['OPENAI_API_KEY']
 		if 'OPENAI_ORGANIZATION' in os.environ.keys() :
 			# TODO: The 'openai.organization' option isn't read in the client API. You will need to pass it when you instantiate the client, e.g. 'OpenAI(organization=os.environ['OPENAI_ORGANIZATION'])'
@@ -54,7 +53,7 @@ class PersonaSkill(PersonaBaseSkill) :
 		self.system_prompt = [{'role': 'system', 'content': RESPONSE_PREAMBLE}]
 
 
-	def match_intent(self,message: Message) -> Bool :
+	def match_intent(self,message: Message) -> bool :
 		# Tag user and bot for API
 		if message.meta['isFromMe'] :
 			if self.respond_to_self and (len([x for x in self.respond_to_self if x in list(set([message.sender_identifier] + message.recipients))])) > 0 :
@@ -70,7 +69,7 @@ class PersonaSkill(PersonaBaseSkill) :
 		else :
 			if message.text not in  [x['content'] for x in self.chat_logs[message.chat_identifier]] :
 				self.chat_logs[message.chat_identifier].append({'role': role, 'content': message.text, 'name': sender})
-		self.log.debug(f'Chat log for {message.chat_identifier}: {list(self.chat_logs[message.chat_identifier])}')
+		# self.log.debug(f'Chat log for {message.chat_identifier}: {list(self.chat_logs[message.chat_identifier])}')
 		# Don't respond if you've responded already recently
 		if datetime.datetime.now().timestamp() < (self.last_check + BACKOFF_SEC) :
 			self.log.warn('Responding too fast, not responding again.')

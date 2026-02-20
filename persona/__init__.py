@@ -1,9 +1,5 @@
 from __future__ import annotations
 from persona.persona import *
-import abc
-import os
-import inspect
-import importlib
 from typing import List
 from dataclasses import dataclass
 import datetime
@@ -34,7 +30,7 @@ class Message :
 	text: str
 	attachments: List[Attachment]
 	timestamp: datetime.datetime
-	recipients: List[String]
+	recipients: List[str]
 	identifier: str
 	meta: dict
 
@@ -55,7 +51,7 @@ class PersonaBaseSkill() :
 		   temporary secrets. Exceptions raised here are ignored."""
 		pass
 
-	def match_intent(self,message: Message) -> Bool :
+	def match_intent(self,message: Message) -> bool :
 		"""Receive text and determine if the skill should be used to respond to the message."""
 		raise PersonaIntentException('This skill does not know if it should respond.')
 

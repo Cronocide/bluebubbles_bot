@@ -11,10 +11,10 @@ import re
 
 BACKOFF_SEC = 30
 SIMPLE_REPLIES = {
-	'^🍕😘$': ['😘🍕'],
 	'^Why did the .* cross the road\?': ['To get to the other side!'],
 	'^Hello$': ['Hello!','Howdy!','Hello there!','What\'s up!','Hi there!'],
-	'^You there?$': ['bluebubblesbot ready']
+	'^You there?$': ['bluebubblesbot ready'],
+	'^Test$': ['Bluebubblesbot is working!'],
 }
 class PersonaSkill(PersonaBaseSkill) :
 	"""A skill to automatically respond to specific keyword combinations.'"""
@@ -24,10 +24,10 @@ class PersonaSkill(PersonaBaseSkill) :
 		self.log = logging.getLogger(__name__)
 		self.log = logging.LoggerAdapter(self.log,{'log_module':'simplereply'})
 
-	def match_intent(self,message: Message) -> Bool :
+	def match_intent(self,message: Message) -> bool :
 		# Don't respond if you've responded already recently
 		if datetime.datetime.now().timestamp() < (self.last_check + BACKOFF_SEC) :
-			self.log.warn('Responding too fast, not responding again.')
+			self.log.warning('Responding too fast, not responding again.')
 			return False
 		for trigger in SIMPLE_REPLIES.keys() :
 			matches = re.search(trigger, message.text)
