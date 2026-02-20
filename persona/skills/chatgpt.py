@@ -101,6 +101,7 @@ class PersonaSkill(PersonaBaseSkill) :
 
 	def respond(self, message: Message) -> Message :
 		"""Respond to a message by generating another message."""
+		self.last_check = datetime.datetime.now().timestamp()
 		try :
 			# Get a completion from OpenAI by sending the last MAX_CHAT_CONTEXT messages to the bot.
 			chat_log = self.system_prompt + list(self.chat_logs[message.chat_identifier])

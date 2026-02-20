@@ -38,6 +38,7 @@ class PersonaSkill(PersonaBaseSkill) :
 
 	def respond(self, message: Message) -> Message :
 		"""Respond to a message by generating another message."""
+		self.last_check = datetime.datetime.now().timestamp()
 		try :
 			for trigger in SIMPLE_REPLIES.keys() :
 				matches = re.search(trigger, message.text)
