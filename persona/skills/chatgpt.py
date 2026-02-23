@@ -54,6 +54,9 @@ class PersonaSkill(PersonaBaseSkill) :
 
 
 	def match_intent(self,message: Message) -> bool :
+		# Skip messages sent with invisible ink
+		if message.data.get('expressiveSendStyleId','') == 'com.apple.MobileSMS.expressivesend.invisibleink' :
+			return False
 		# Tag user and bot for API
 		if message.meta['isFromMe'] :
 			if self.respond_to_self and (len([x for x in self.respond_to_self if x in list(set([message.sender_identifier] + message.recipients))])) > 0 :

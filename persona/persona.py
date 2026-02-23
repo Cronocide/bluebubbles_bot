@@ -63,7 +63,7 @@ class Persona :
 			# We can't startup the skill here because it hasn't been configured. We'll handle that at runtime.
 			try:
 				# Remove any intialized objects of the same name, forcing a reinitialization
-				_initialized_skills.remove(self._skill_map[skill_name])
+				self._initialized_skills.remove(self._skill_map[skill_name])
 			except:
 				pass
 			self._skill_map.update({skill_name:skill})

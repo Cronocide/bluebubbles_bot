@@ -9,7 +9,7 @@ import requests
 import os
 import re
 
-
+# Vibe-coded with claude-4.6-opus-high. on 2026-02-21.
 DEFAULT_CONVERSATION_TIMEOUT = 21600 # 6 hours in seconds
 DEFAULT_CONTACT_FIELD_TYPE_NAMES = 'Phone,Email'
 
@@ -214,6 +214,9 @@ class PersonaSkill(PersonaBaseSkill) :
 		}
 
 	def match_intent(self,message: Message) -> bool :
+		# Skip messages sent with invisible ink
+		if message.data.get('expressiveSendStyleId','') == 'com.apple.MobileSMS.expressivesend.invisibleink' :
+			return False
 		# Resolve the contact address from the message
 		address = self._resolve_contact_address(message)
 		if not address :

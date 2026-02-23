@@ -25,6 +25,9 @@ class PersonaSkill(PersonaBaseSkill) :
 		self.log = logging.LoggerAdapter(self.log,{'log_module':'simplereply'})
 
 	def match_intent(self,message: Message) -> bool :
+		# Skip messages sent with invisible ink
+		if message.data.get('expressiveSendStyleId','') == 'com.apple.MobileSMS.expressivesend.invisibleink' :
+			return False
 		# Don't respond if you've responded already recently
 		if datetime.datetime.now().timestamp() < (self.last_check + BACKOFF_SEC) :
 			self.log.warning('Responding too fast, not responding again.')
