@@ -26,7 +26,7 @@ class PersonaSkill(PersonaBaseSkill) :
 
 	def match_intent(self,message: Message) -> bool :
 		# Skip messages sent with invisible ink
-		if message.get('expressiveSendStyleId','') == 'com.apple.MobileSMS.expressivesend.invisibleink' :
+		if message.meta['effectId'] == 'com.apple.MobileSMS.expressivesend.invisibleink' :
 			return False
 		# Don't respond if you've responded already recently
 		if datetime.datetime.now().timestamp() < (self.last_check + BACKOFF_SEC) :

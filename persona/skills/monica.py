@@ -215,7 +215,7 @@ class PersonaSkill(PersonaBaseSkill) :
 
 	def match_intent(self,message: Message) -> bool :
 		# Skip messages sent with invisible ink
-		if message.get('expressiveSendStyleId','') == 'com.apple.MobileSMS.expressivesend.invisibleink' :
+		if message.meta['effectId'] == 'com.apple.MobileSMS.expressivesend.invisibleink' :
 			return False
 		# Resolve the contact address from the message
 		address = self._resolve_contact_address(message)
