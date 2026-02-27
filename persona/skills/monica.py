@@ -8,6 +8,10 @@ import logging
 import requests
 import os
 import re
+import time
+from collections import deque
+
+MONICA_API_RATE_LIMIT = 60 # requests per minute
 
 # Vibe-coded with claude-4.6-opus-high. on 2026-02-21.
 DEFAULT_CONVERSATION_TIMEOUT = 21600 # 6 hours in seconds
@@ -25,6 +29,24 @@ class PersonaSkill(PersonaBaseSkill) :
 		self.api_url = None
 		self.api_headers = {}
 		self.conversation_timeout = DEFAULT_CONVERSATION_TIMEOUT
+		self._request_timestamps = deque()
+
+	def _rate_limit(self) :
+		"""Enforce rate limiting for Monica API calls (60 requests per minute)."""
+		now = time.time()
+		# Remove timestamps older than 60 seconds
+		while self._request_timestamps and self._request_timestamps[0] <= now - 60 :
+			self._request_timestamps.popleft()
+		# If we've hit the limit, sleep until the oldest request expires
+		if len(self._request_timestamps) >= MONICA_API_RATE_LIMIT :
+			sleep_time = 60 - (now - self._request_timestamps[0])
+			if sleep_time > 0 :
+				self.log.debug(f'Rate limit reached, sleeping for {sleep_time:.1f}s')
+				time.sleep(sleep_time)
+				now = time.time()
+				while self._request_timestamps and self._request_timestamps[0] <= now - 60 :
+					self._request_timestamps.popleft()
+		self._request_timestamps.append(time.time())
 
 	def startup(self) :
 		for key in ['MONICA_API_URL','MONICA_API_TOKEN'] :
@@ -50,6 +72,7 @@ class PersonaSkill(PersonaBaseSkill) :
 
 	def _api_get(self,endpoint,params=None) :
 		"""Make a GET request to the Monica API."""
+		self._rate_limit()
 		url = f'{self.api_url}/{endpoint.lstrip("/")}'
 		response = requests.get(url,headers=self.api_headers,params=params)
 		response.raise_for_status()
@@ -57,6 +80,7 @@ class PersonaSkill(PersonaBaseSkill) :
 
 	def _api_post(self,endpoint,data) :
 		"""Make a POST request to the Monica API."""
+		self._rate_limit()
 		url = f'{self.api_url}/{endpoint.lstrip("/")}'
 		response = requests.post(url,headers=self.api_headers,json=data)
 		response.raise_for_status()
