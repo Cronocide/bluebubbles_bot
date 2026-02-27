@@ -41,7 +41,8 @@ class PersonaSkill(PersonaBaseSkill) :
 		if len(self._request_timestamps) >= MONICA_API_RATE_LIMIT :
 			sleep_time = 60 - (now - self._request_timestamps[0])
 			if sleep_time > 0 :
-				self.log.debug(f'Rate limit reached, sleeping for {sleep_time:.1f}s')
+				if sleep_time > 1 :
+					self.log.debug(f'Rate limit reached, sleeping for {sleep_time:.1f}s')
 				time.sleep(sleep_time)
 				now = time.time()
 				while self._request_timestamps and self._request_timestamps[0] <= now - 60 :
