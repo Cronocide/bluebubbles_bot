@@ -1,0 +1,70 @@
+# ——— Python ———
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+*.whl
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ——— Environment ———
+.env
+.venv/
+env/
+venv/
+ENV/
+
+# ——— Testing ———
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+*.log
+nosetests.xml
+
+# ——— Type checks ———
+.mypy_cache/
+.pytype/
+.pyre/
+
+# ——— Docker ———
+.dockerignore~
+docker-compose.override.yml
+
+# ——— macOS ———
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+
+# ——— Linux ———
+*~
+*.swp
+*.swo
+.nfs*
+
+# ——— IDEs & Editors ———
+.vscode/
+.idea/
+*.iml
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# ——— Misc ———
+*.bak
+*.tmp
+*.pid
+*.seed
