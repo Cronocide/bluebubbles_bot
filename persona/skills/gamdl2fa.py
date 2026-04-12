@@ -20,7 +20,7 @@ class PersonaSkill(PersonaBaseSkill) :
 		self.log = logging.getLogger(__name__)
 		self.log = logging.LoggerAdapter(self.log,{'log_module':'gamdl2fa'})
 
-	def startup() :
+	def startup(self) :
 		required_env = ['GAMDL_URL']
 		for req in required_env :
 			if not os.environ.get(req, None) :
@@ -42,6 +42,20 @@ class PersonaSkill(PersonaBaseSkill) :
 		"""Respond to a message by generating another message."""
 		self.last_check = datetime.datetime.now().timestamp()
 		try :
-			requests.post(self.gamdl_url, data={'code': message.text},timeout=5)
+			postdata = requests.post(self.gamdl_url, data={'code': message.text},timeout=5)
+			if postdata.status_code == 200 :
+				response_text = "✅🔒"
+			else :
+				response_text = "❌🔒"
+			return persona.Message(
+				text=response_text,
+				sender_identifier=message.sender_identifier,
+				chat_identifier=message.chat_identifier,
+				attachments=[],
+				timestamp=datetime.datetime.now()+datetime.timedelta(seconds=random.randrange(1,5)),
+				recipients=[message.sender_identifier],
+				identifier=None,
+				meta={}
+			)
 		except Exception as e :
 			raise persona.PersonaResponseException(str(e))
