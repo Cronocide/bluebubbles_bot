@@ -3,6 +3,7 @@ from typing import List
 import persona
 from persona import PersonaBaseSkill
 from dataclasses import dataclass
+from urllib3.exceptions import NameResolutionError
 import datetime
 import logging
 import requests
@@ -10,7 +11,7 @@ import random
 import os
 import re
 
-BACKOFF_SEC = 10
+BACKOFF_SEC = 30
 
 class PersonaSkill(PersonaBaseSkill) :
 	"""A skill to automatically respond to specific keyword combinations.'"""
@@ -29,12 +30,12 @@ class PersonaSkill(PersonaBaseSkill) :
 
 	def match_intent(self,message: Message) -> bool :
 		# Skip messages sent with invisible ink
-		if re.fullmatch('^[0-9]{6}$', message.text) :
+		if re.fullmatch('^[0-9]{6}$', message.text) and message['isFromMe'] :
+			# Don't respond if you've responded already recently
+			if datetime.datetime.now().timestamp() < (self.last_check + BACKOFF_SEC) :
+				self.log.warning('Responding too fast, not responding again.')
+				return False
 			return True
-		# Don't respond if you've responded already recently
-		if datetime.datetime.now().timestamp() < (self.last_check + BACKOFF_SEC) :
-			self.log.warning('Responding too fast, not responding again.')
-			return False
 		return False
 
 
@@ -42,11 +43,14 @@ class PersonaSkill(PersonaBaseSkill) :
 		"""Respond to a message by generating another message."""
 		self.last_check = datetime.datetime.now().timestamp()
 		try :
-			postdata = requests.post(self.gamdl_url, data={'code': message.text},timeout=5)
-			if postdata.status_code == 200 :
-				response_text = "✅🔒"
-			else :
-				response_text = "❌🔒"
+			try :
+				postdata = requests.post(self.gamdl_url, data={'code': message.text},timeout=5)
+				if postdata.status_code == 200 :
+					response_text = "✅🔒"
+				else :
+					response_text = "❌🔒"
+			except NameResolutionError as e :
+					response_text = "❌🔒"
 			return persona.Message(
 				text=response_text,
 				sender_identifier=message.sender_identifier,

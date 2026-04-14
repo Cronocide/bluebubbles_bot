@@ -151,7 +151,8 @@ if __name__ == '__main__':
 				recipients = []
 			else :
 				sender = 'Me'
-				recipients = [message['handle']['address']]
+				if 'handle' in message and 'address' in message['handle'] :
+					recipients = [message['handle']['address']]
 			# Resolve attachments
 			attachments = []
 			for attachment in message['attachments'] :
