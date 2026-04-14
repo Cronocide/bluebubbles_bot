@@ -30,7 +30,7 @@ class PersonaSkill(PersonaBaseSkill) :
 
 	def match_intent(self,message: Message) -> bool :
 		# Skip messages sent with invisible ink
-		if re.fullmatch('^[0-9]{6}$', message.text) and message['isFromMe'] :
+		if re.fullmatch('^[0-9]{6}$', message.text) and message.meta['isFromMe'] :
 			# Don't respond if you've responded already recently
 			if datetime.datetime.now().timestamp() < (self.last_check + BACKOFF_SEC) :
 				self.log.warning('Responding too fast, not responding again.')
